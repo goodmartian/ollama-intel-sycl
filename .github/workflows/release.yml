@@ -36,9 +36,9 @@ jobs:
         run: |
           PREV_TAG=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1) 2>/dev/null || echo "")
           if [ -z "$PREV_TAG" ]; then
-            git log --pretty=format:"- %s (%h)" > CHANGELOG.md
+            git log --pretty=format:"- %s (%h)" | grep -v "chore: update ollama submodule" > CHANGELOG.md || true
           else
-            git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" > CHANGELOG.md
+            git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" | grep -v "chore: update ollama submodule" > CHANGELOG.md || true
           fi
       
       - name: Create Release
@@ -47,7 +47,7 @@ jobs:
           tag_name: ${{ steps.version.outputs.version }}
           name: Release ${{ steps.version.outputs.version }}
           body_path: CHANGELOG.md
-          generate_release_notes: true
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
