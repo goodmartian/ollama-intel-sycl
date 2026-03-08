@@ -16,13 +16,11 @@ cd $(dirname $0)/..
 
 mkdir -p dist
 
-    docker buildx build \
-        --output type=local,dest=./dist/ \
-        --platform=linux/amd64 \
-        ${OLLAMA_COMMON_BUILD_ARGS} \
-        --target archive \
-        -f Dockerfile \
-        .
 
-echo "Compressing linux tar bundles..."
-tar c -C ./dist/ . | pigz -9vc >./dist/ollama-linux-amd64-sycl.tgz
+docker buildx build \
+    --output type=local,dest=./dist/ \
+    --platform=linux/amd64 \
+    ${OLLAMA_COMMON_BUILD_ARGS} \
+    --target archive \
+    -f Dockerfile \
+    .

@@ -34,7 +34,6 @@ ollama/ml/backend/ggml/ggml: ollama/llama/vendor
 OLLAMA_PATCH_DIR=ollama/llama/patches
 LOCAL_PATCH_DIR=patches
 INCLUDE_PATCHES= \
-	0004-solar-pro.patch \
 	0010-fix-string-arr-kv-loading.patch \
 	0011-ollama-debug-tensor.patch \
 	0012-add-ollama-vocab-for-grammar-support.patch \
@@ -42,17 +41,11 @@ INCLUDE_PATCHES= \
 	0014-graph-memory-reporting-on-failure.patch \
 	0016-add-C-API-for-mtmd_input_text.patch \
 	0017-no-power-throttling-win32-with-gnuc.patch \
-	0018-ggml-Add-batch-size-hint.patch \
-	0020-ggml-No-alloc-mode.patch \
-	0021-decode-disable-output_all.patch \
 	0023-harden-uncaught-exception-registration.patch \
-	0024-GPU-discovery-enhancements.patch \
 	0025-NVML-fallback-for-unified-memory-GPUs.patch \
-	0026-report-LoadLibrary-failures.patch \
 	0028-Add-memory-detection-using-DXGI-PDH.patch \
 	0029-ggml-cuda-skip-large-batches.patch \
-	0031-win-exit-instead-of-abort.patch \
-	0032-ggml-add-batch-size-hint-for-sycl.patch
+	0031-win-exit-instead-of-abort.patch
 
 OLLAMA_PATCHES=$(wildcard $(OLLAMA_PATCH_DIR)/*.patch)
 LOCAL_PATCHES=$(wildcard $(LOCAL_PATCH_DIR)/*.patch)
