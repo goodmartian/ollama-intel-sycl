@@ -1,0 +1,48 @@
+name: Build Ollama SYCL
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Apply patches
+        run: ./scripts/patch.sh
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and extract dist
+        run: |
+          . ollama/scripts/env.sh
+          mkdir -p dist
+          docker buildx build \
+            --output type=local,dest=./dist/ \
+            --platform=linux/amd64 \
+            ${OLLAMA_COMMON_BUILD_ARGS} \
+            --target archive \
+            -f Dockerfile .
+          ln -sf libggml-sycl.so dist/lib/ollama/libggml-sycl-intel.so
+
+      - name: Create tarball
+        run: tar czf ollama-sycl-linux-amd64.tar.gz -C dist .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ollama-sycl-linux-amd64
+          path: ollama-sycl-linux-amd64.tar.gz
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ollama-sycl-linux-amd64.tar.gz
+          generate_release_notes: true

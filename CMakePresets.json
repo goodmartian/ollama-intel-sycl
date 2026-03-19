@@ -24,7 +24,9 @@
       "cacheVariables": {
         "GGML_SYCL": "ON",
         "GGML_SYCL_DNN": "ON",
-        "GGML_SYCL_F16": "ON"
+        "GGML_SYCL_F16": "ON",
+        "GGML_BACKEND_DL": "ON",
+        "BUILD_SHARED_LIBS": "ON"
       }
     },
     {

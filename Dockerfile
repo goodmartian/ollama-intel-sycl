@@ -58,6 +58,8 @@ RUN apt-get update \
 COPY CMakeLists.txt CMakePresets.json .
 COPY ollama/ml/backend/ggml/ggml ml/backend/ggml/ggml
 COPY ollama/llama/vendor/ggml/src/ggml-sycl ml/backend/ggml/ggml/src/ggml-sycl
+# Add ggml_backend_score for DL plugin registration (required by load_best)
+RUN printf '\nGGML_BACKEND_DL_SCORE_IMPL([]() -> int { return 100; })\n' >> ml/backend/ggml/ggml/src/ggml-sycl/ggml-sycl.cpp
 ARG PARALLEL
 RUN --mount=type=cache,target=/root/.ccache \
     cmake --preset 'SYCL_INTEL' \
@@ -73,7 +75,9 @@ RUN mkdir -p /build/lib/ollama && \
     cp -L /opt/intel/oneapi/compiler/latest/lib/libirng.so /build/lib/ollama/ && \
     cp -L /opt/intel/oneapi/compiler/latest/lib/libintlc.so.5 /build/lib/ollama/ && \
     cp -L /opt/intel/oneapi/compiler/latest/lib/libur_adapter_opencl.so.0 /build/lib/ollama/ && \
+    cp -L /opt/intel/oneapi/compiler/latest/lib/libur_adapter_level_zero.so.0 /build/lib/ollama/ && \
     cp -L /opt/intel/oneapi/compiler/latest/lib/libur_loader.so.0 /build/lib/ollama/ && \
+    cp -L /opt/intel/oneapi/compiler/latest/lib/libze_loader.so.1 /build/lib/ollama/ 2>/dev/null || true && \
     # DNNL (Deep Neural Network Library)
     cp -L /opt/intel/oneapi/dnnl/latest/lib/libdnnl.so.3 /build/lib/ollama/ && \
     # TBB (Threading Building Blocks)
@@ -109,7 +113,10 @@ ARG FLAVOR
 
 FROM ubuntu:24.04
 RUN apt-get update \
-    && apt-get install -y ca-certificates \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        ocl-icd-libopencl1 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=archive /bin /usr/bin
@@ -118,5 +125,6 @@ COPY --from=archive /lib/ollama /usr/lib/ollama
 ENV LD_LIBRARY_PATH=/usr/lib/ollama
 ENV OLLAMA_HOST=0.0.0.0:11434
 EXPOSE 11434
-ENTRYPOINT ["/bin/ollama"]
+COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["serve"]

@@ -1,0 +1,32 @@
+# Docker Compose for non-NixOS systems (Ubuntu/Debian)
+# For NixOS, use the systemd service from ollama.nix instead
+services:
+  ollama:
+    image: ollama-sycl:latest
+    container_name: ollama-sycl
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+    environment:
+      OLLAMA_HOST: "0.0.0.0:11434"
+      OLLAMA_NUM_GPU: "999"
+      OLLAMA_FLASH_ATTENTION: "0"
+      ZES_ENABLE_SYSMAN: "1"
+      SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS: "1"
+      UR_L0_ENABLE_RELAXED_ALLOCATION_LIMITS: "1"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  ollama-data:
+    driver: local
